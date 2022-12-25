@@ -57,3 +57,12 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     post._meta.get_field(field).help_text, expected_value
                 )
+
+    def test_text_max_length_not_exceed(self):
+        """
+        Длинный text обрезается и не превышает max_length поля text в модели.
+        """
+        post = PostModelTest.post
+        max_length_text = post._meta.get_field('text').max_length
+        length_text = len(post.text)
+        self.assertEqual(max_length_text, length_text)

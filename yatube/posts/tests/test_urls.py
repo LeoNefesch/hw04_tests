@@ -29,18 +29,27 @@ class PostURLTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-
-    def test_urls_correct_ctatus_code(self):
-        """Соответсвие URL-адреса страницы и статуса ответа
-        для неавторизованного пользователя."""
-        url_names = {
+        self.templates_url_names = {
+            '/': 'posts/index.html',
+            '/group/test-slug/': 'posts/group_list.html',
+            '/profile/NoName/': 'posts/profile.html',
+            '/posts/5/': 'posts/post_detail.html',
+            '/create/': 'posts/create_post.html',
+            '/posts/5/edit/': 'posts/create_post.html',
+        }
+        self.url_names = {
             '/': HTTPStatus.OK,
             '/group/test-slug/': HTTPStatus.OK,
             '/profile/NoName/': HTTPStatus.OK,
             '/posts/5/': HTTPStatus.OK,
             '/unexisting_page/': HTTPStatus.NOT_FOUND,
         }
-        for address, status in url_names.items():
+
+    def test_urls_correct_ctatus_code(self):
+        """Соответсвие URL-адреса страницы и статуса ответа
+        для неавторизованного пользователя."""
+
+        for address, status in self.url_names.items():
             with self.subTest(address=address):
                 response = self.guest_client.get(address)
                 self.assertEqual(response.status_code, status)
@@ -49,12 +58,14 @@ class PostURLTests(TestCase):
         """Страница /create/ доступна авторизованному пользователю."""
         response = self.authorized_client.get('/create/')
         self.assertEqual(response.status_code, HTTPStatus.OK)
+        # self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_post_edit_url_exists_at_desired_location(self):
         """Страница /posts/5/edit/ доступна авторизованному
         пользователю."""
         response = self.authorized_client.get('/posts/5/edit/')
         self.assertEqual(response.status_code, HTTPStatus.OK)
+        # self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_post_create_url_redirect_anonymous_on_admin_login(self):
         """Страница по адресу /create/ перенаправит анонимного
@@ -65,7 +76,7 @@ class PostURLTests(TestCase):
             response, '/auth/login/?next=/create/'
         )
 
-    def test_task_list_url_redirect_anonymous_on_admin_login(self):
+    def test_post_edit_url_redirect_anonymous_on_admin_login(self):
         """Страница по адресу /posts/5/edit/ перенаправит
         анонимного пользователя на страницу логина.
         """
@@ -78,15 +89,7 @@ class PostURLTests(TestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        templates_url_names = {
-            '/': 'posts/index.html',
-            '/group/test-slug/': 'posts/group_list.html',
-            '/profile/NoName/': 'posts/profile.html',
-            '/posts/5/': 'posts/post_detail.html',
-            '/create/': 'posts/create_post.html',
-            '/posts/5/edit/': 'posts/create_post.html',
-        }
-        for address, template in templates_url_names.items():
+        for address, template in self.templates_url_names.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)

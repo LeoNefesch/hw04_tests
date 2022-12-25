@@ -12,7 +12,7 @@ class ViewsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='NoName')
+        cls.user = User.objects.create_user(username='TestUser')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -36,7 +36,7 @@ class ViewsTests(TestCase):
             reverse('posts:index'): 'posts/index.html',
             (reverse('posts:group_list', kwargs={'slug': 'test-slug'})):
                 'posts/group_list.html',
-            (reverse('posts:profile', kwargs={'username': 'NoName'})):
+            (reverse('posts:profile', kwargs={'username': 'TestUser'})):
                 'posts/profile.html',
             (reverse('posts:post_detail', kwargs={'post_id': 5})):
                 'posts/post_detail.html',
@@ -80,8 +80,8 @@ class ViewsTests(TestCase):
         self.assertEqual(response.context.get('post').author, self.post.author)
         self.assertEqual(response.context.get('post').group, self.post.group)
 
-    def test_create_edit_show_correct_context(self):
-        """Шаблон create_edit сформирован с правильным контекстом."""
+    def test_post_edit_show_correct_context(self):
+        """Шаблон post_edit сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_edit', kwargs={'post_id': 5})
         )
@@ -93,9 +93,12 @@ class ViewsTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields[value]
                 self.assertIsInstance(form_field, expected)
+        self.assertRedirects(
+            response, reverse('posts:post_detail')
+        )
 
-    def test_create_show_correct_context(self):
-        """Шаблон create сформирован с правильным контекстом."""
+    def test_post_create_show_correct_context(self):
+        """Шаблон post_create сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse("posts:post_create"))
         form_fields = {
             'text': forms.fields.CharField,
@@ -105,6 +108,8 @@ class ViewsTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields[value]
                 self.assertIsInstance(form_field, expected)
+        self.assertRedirects(response, reverse(
+            'posts:profile', args=('TestUser',)))
 
     def test_check_group_in_pages(self):
         """Пост создан на страницах с выбранной группой"""
@@ -114,7 +119,7 @@ class ViewsTests(TestCase):
                 'posts:group_list', kwargs={'slug': 'test-slug'}
             ): Post.objects.get(group=self.post.group),
             reverse(
-                'posts:profile', kwargs={'username': 'NoName'}
+                'posts:profile', kwargs={'username': 'TestUser'}
             ): Post.objects.get(group=self.post.group),
         }
         for value, expected in form_fields.items():
