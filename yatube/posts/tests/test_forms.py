@@ -75,8 +75,8 @@ class PostFormTests(TestCase):
         }
         response = self.authorized_client.post(
             reverse('posts:post_edit',
-            kwargs={'post_id': self.post.id, }
-        ),
+                    kwargs={'post_id': self.post.id, }
+                    ),
             follow=True
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)

@@ -1,4 +1,3 @@
-from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -12,7 +11,7 @@ class ViewsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username= 'TestUser')
+        cls.user = User.objects.create_user(username='TestUser')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -73,7 +72,7 @@ class ViewsTests(TestCase):
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.guest_client.get(
-            reverse('posts:post_detail', kwargs={'post_id': self.post.id,})
+            reverse('posts:post_detail', kwargs={'post_id': self.post.id, })
         )
         self.assertEqual(response.context.get('post').text, self.post.text)
         self.assertEqual(response.context.get('post').author, self.post.author)
