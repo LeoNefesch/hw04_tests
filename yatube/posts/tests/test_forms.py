@@ -1,12 +1,12 @@
 import shutil
 import tempfile
+from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-# from ..forms import PostForm
 from ..models import Group, Post
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -24,7 +24,6 @@ class PostFormTests(TestCase):
             slug='test-slug',
             description='Тестовое описание',
         )
-        # cls.form = PostForm()
 
     @classmethod
     def tearDownClass(cls):
@@ -42,7 +41,6 @@ class PostFormTests(TestCase):
             text='Текст поста',
             author=self.user,
             group=self.group,
-            # group='Тестовая группа',
         )
         form_data = {
             'group': self.group,
@@ -53,7 +51,7 @@ class PostFormTests(TestCase):
         #     data=form_data,
         #     follow=True
         # )
-        # self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(Post.objects.count(), 1)
         post = Post.objects.last()
         self.assertEqual(post.author, self.user)
         self.assertEqual(post.text, form_data['text'])
@@ -71,19 +69,22 @@ class PostFormTests(TestCase):
             slug='test-new-slug',
             description='Тестовое описание',
         )
-        response = self.authorized_client.post(reverse(
-            'posts:post_edit', kwargs={'post_id': self.post.id, }
+        form_data = {
+            'group': self.group,
+            'text': 'новый текст',
+        }
+        response = self.authorized_client.post(
+            reverse('posts:post_edit',
+            kwargs={'post_id': self.post.id, }
         ),
-            data={
-                'group': 'новая группа',
-                'text': 'новый текст',
-        },
             follow=True
         )
-        edited_post = response.context.get('post')
-        edited_group = response.context.get('group')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        post = Post.objects.last()
         self.post.refresh_from_db()
-        self.assertEqual(self.post, edited_post)
-        self.assertEqual(self.group, edited_group)
-        self.assertEqual(Group.objectsfilter(
-            title='Тестовая группа').count(), 0)
+        self.assertEqual(post.author, self.user)
+        self.assertNotEqual(post.text, form_data.get('text'))
+        # self.assertEqual(post.group, form_data['group'])
+        # self.assertEqual(Group.objects.filter(
+        #     title='Тестовая группа').count(), 0)
+        self.assertIsNot(post, Post.objects.get(pk=self.post.id))
