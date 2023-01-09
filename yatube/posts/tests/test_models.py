@@ -10,7 +10,7 @@ class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
+        cls.user = User.objects.create_user(username='author')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='Тестовый слаг',
@@ -19,6 +19,7 @@ class PostModelTest(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text=('Т' * 15),
+            # group=cls.group,
         )
 
     def test_models_have_correct_object_names(self):
@@ -29,6 +30,7 @@ class PostModelTest(TestCase):
         post = PostModelTest.post
         expected_post_text = post.text
         self.assertEqual(expected_post_text, str(post))
+        self.assertEqual(str(post), post.text[:15])
 
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""
@@ -57,12 +59,3 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     post._meta.get_field(field).help_text, expected_value
                 )
-
-    def test_text_max_length_not_exceed(self):
-        """
-        Длинный text обрезается и не превышает max_length поля text в модели.
-        """
-        post = PostModelTest.post
-        max_length_text = post._meta.get_field('text').max_length
-        length_text = len(post.text)
-        self.assertEqual(max_length_text, length_text)

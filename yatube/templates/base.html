@@ -3,7 +3,11 @@
 <html lang="ru">
   <head> 
     {% include 'includes/head.html' %}
-    <title></title>
+    <title>
+      {% block title %}
+        Последние обновления на сайте
+      {% endblock %}
+    </title>
   </head>
   <body>
     {% include 'includes/header.html' %}
