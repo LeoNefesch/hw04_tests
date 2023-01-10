@@ -1,12 +1,8 @@
-# from http import HTTPStatus
-
 from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from posts.models import Group, Post
-
-# ^^^ImportError: attempted relative import with no known parent package^^^
 
 User = get_user_model()
 
@@ -94,12 +90,6 @@ class ViewsTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
-        # self.assertEqual(response.status_code, HTTPStatus.OK)
-        # if form.is_valid():
-        #     self.assertRedirects(response,
-        #         f'/profile/{self.post.author}/')
-        # reverse(
-        #     'posts:profile', args=(self.post.author,)))
 
     def test_post_edit_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
@@ -108,7 +98,6 @@ class ViewsTests(TestCase):
         )
         form_fields = {
             'text': forms.fields.CharField,
-            # 'group': forms.fields.ChoiceField,
             'group': forms.models.ModelChoiceField,
         }
         self.assertIn('form', response.context)
@@ -117,25 +106,6 @@ class ViewsTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
-        # self.assertEqual(response.status_code, HTTPStatus.OK)
-        # self.assertRedirects(response,
-        # f'/posts/{self.post.id}/')
-        # reverse('posts:post_detail',
-        #                      args=(self.post.id,)))
-
-    # def test_post_create_correct_context(self):
-    #     """Шаблон post_create и post_edit сформированы с правильным
-    #     контекстом."""
-    #     url_names = (
-    #         reverse('posts:post_create'),
-    #         reverse('posts:post_edit', kwargs={'post_id': self.post.id}))
-    #     for url_name in url_names:
-    #         with self.subTest():
-    #             response = self.authorized_client.get(url_name)
-    #             if url_name == 'post_edit':
-    #                 self.assertEqual(response.context['is_edit'], True)
-    #             self.assertIn('form', response.context)
-    #             self.assertIsInstance(response.context['form'], PostForm)
 
     def test_check_group_in_pages(self):
         """Пост создан на страницах с выбранной группой"""

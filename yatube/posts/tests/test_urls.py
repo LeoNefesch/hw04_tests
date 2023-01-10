@@ -5,9 +5,6 @@ from django.test import Client, TestCase
 
 from ..models import Group, Post
 
-# from django.urls import reverse
-
-
 User = get_user_model()
 
 
@@ -63,16 +60,13 @@ class PostURLTests(TestCase):
         пользователю."""
         response = self.authorized_client.get(self.post_edit_url)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        # if self.user != 'author':
-        #     self.assertRedirects(response, reverse('posts:post_detail',
-        #                       args=(self.post.id,)))
 
     def test_post_create_url_redirect_anonymous_on_admin_login(self):
         """Страница по адресу /create/ перенаправит анонимного
         пользователя на страницу логина.
         """
         response = self.guest_client.get(self.post_create_url, follow=True)
-        # self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertRedirects(
             response, '/auth/login/?next=/create/'
         )
