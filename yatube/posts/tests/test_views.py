@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from posts.models import Group, Post
+from posts.paginators import NUMBER_OF_POSTS
 
 User = get_user_model()
 
@@ -32,7 +33,7 @@ class ViewsTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
-            (reverse('posts:group_list', kwargs={'slug': 'test-slug'})):
+            (reverse('posts:group_list', args=('test-slug',))):
                 'posts/group_list.html',
             (reverse('posts:profile', args=(self.post.author,))):
                 'posts/profile.html',
@@ -50,15 +51,17 @@ class ViewsTests(TestCase):
     def test_index_uses_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.guest_client.get(reverse('posts:index'))
-        expected = list(Post.objects.all()[:10])
+        expected = list(Post.objects.all()[:NUMBER_OF_POSTS])
         self.assertEqual(list(response.context.get('page_obj')), expected)
 
     def test_group_list_page_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = self.guest_client.get(
-            reverse('posts:group_list', kwargs={'slug': 'test-slug'})
+            reverse('posts:group_list', args=('test-slug',))
         )
-        expected = list(Post.objects.filter(group_id=self.group.id)[:10])
+        expected = list(
+            Post.objects.filter(group_id=self.group.id)[:NUMBER_OF_POSTS]
+        )
         self.assertEqual(list(response.context.get('page_obj')), expected)
 
     def test_profile_show_correct_context(self):
@@ -66,13 +69,15 @@ class ViewsTests(TestCase):
         response = self.guest_client.get(
             reverse('posts:profile', args=(self.post.author,))
         )
-        expected = list(Post.objects.filter(author_id=self.user.id)[:10])
+        expected = list(
+            Post.objects.filter(author_id=self.user.id)[:NUMBER_OF_POSTS]
+        )
         self.assertEqual(list(response.context.get('page_obj')), expected)
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.guest_client.get(
-            reverse('posts:post_detail', kwargs={'post_id': self.post.id, })
+            reverse('posts:post_detail', args=(self.post.id,))
         )
         self.assertEqual(response.context.get('post').text, self.post.text)
         self.assertEqual(response.context.get('post').author, self.post.author)
@@ -112,10 +117,10 @@ class ViewsTests(TestCase):
         form_fields = {
             reverse('posts:index'): Post.objects.get(group=self.post.group),
             reverse(
-                'posts:group_list', kwargs={'slug': 'test-slug'}
+                'posts:group_list', args=('test-slug',)
             ): Post.objects.get(group=self.post.group),
             reverse(
-                'posts:profile', kwargs={'username': 'author'}
+                'posts:profile', args=('author',)
             ): Post.objects.get(group=self.post.group),
         }
         for value, expected in form_fields.items():
@@ -128,7 +133,7 @@ class ViewsTests(TestCase):
         """Созданный пост с группой не попал в чужую группу."""
         form_fields = {
             reverse(
-                'posts:group_list', kwargs={'slug': 'test-slug'}
+                'posts:group_list', args=('test-slug',)
             ): Post.objects.exclude(group=self.post.group),
         }
         for value, expected in form_fields.items():
@@ -162,7 +167,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_first_page_contains_ten_records(self):
-        """Проверка: количество постов на первой странице равно 10. """
+        """Проверка: количество постов на первой странице равно 10"""
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(len(response.context['page_obj']), 10)
 

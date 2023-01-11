@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from ..models import POST_LENGTH, Group, Post
 
 User = get_user_model()
+NEW_POST_LENGTH = 16
 
 
 class PostModelTest(TestCase):
@@ -18,7 +19,7 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text=('Т' * 16),
+            text=('Т' * NEW_POST_LENGTH),
             group=cls.group,
         )
 
@@ -28,7 +29,7 @@ class PostModelTest(TestCase):
         expected_group_name = group.title
         self.assertEqual(expected_group_name, str(group))
         post = PostModelTest.post
-        self.assertEqual(str(post), post.text[:15])
+        self.assertEqual(str(post), post.text[:POST_LENGTH])
 
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""
